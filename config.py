@@ -18,7 +18,7 @@ config = PluginConfig(
     plugin=CoreConfig(
         reference='uniq source name',
         type=SOURCE,
-        files=['payload_parser.py', ],
+        files=['epi.py', ],
         is_localstorage=False
     ),
     task=TaskConfig(
@@ -36,15 +36,15 @@ config = PluginConfig(
         bus=None,
     ),
     payload=payload.PayloadConfig(
-        file='payload_parser.py',
-        classname='MyParser',
+        file='epi.py',
+        classname='EPIParser',
         entry=payload.entry.EntryConfig(
             method='content',
             params=[
                 payload.entry.ModuleParamConfig(key='driver', module_name=WEBDRIVER, bus=True),
                 payload.entry.ConstParamConfig(key='max_count_documents', value=50),
-                payload.entry.ConstParamConfig(key='url',
-                                               value='url to the source page'),
+                payload.entry.ConstParamConfig(key='urls', value=['https://www.epicompany.eu/news/', 'https://www.epicompany.eu/news-archive-list/']),
+                payload.entry.ConstParamConfig(key='timeout', value=20)
             ]
         )
     )
