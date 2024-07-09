@@ -2,7 +2,7 @@
 
 ## Написанные методы
 
-# _checking_for_annotation
+### _checking_for_annotation
 ```python
 def _checking_for_annotation(self, web_element: WebElement):
     try:
