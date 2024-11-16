@@ -9,9 +9,9 @@ from s3p_sdk.plugin.config import (
     modules,
     payload
 )
-from s3p_sdk.plugin.config.type import SOURCE
+from s3p_sdk.plugin.types import SOURCE
 from s3p_sdk.module import (
-    WEBDRIVER,
+    WebDriver,
 )
 
 config = PluginConfig(
@@ -41,9 +41,9 @@ config = PluginConfig(
         entry=payload.entry.EntryConfig(
             method='content',
             params=[
-                payload.entry.ModuleParamConfig(key='driver', module_name=WEBDRIVER, bus=True),
+                payload.entry.ModuleParamConfig(key='driver', module_name=WebDriver, bus=True),
                 payload.entry.ConstParamConfig(key='max_count_documents', value=50),
-                payload.entry.ConstParamConfig(key='urls', value=['https://www.epicompany.eu/news/', 'https://www.epicompany.eu/news-archive-list/']),
+                payload.entry.ConstParamConfig(key='urls', value=['https://www.epicompany.eu/news/']),
                 payload.entry.ConstParamConfig(key='timeout', value=20)
             ]
         )

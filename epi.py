@@ -1,4 +1,6 @@
 import time
+from token import tok_name
+
 from s3p_sdk.plugin.payloads.parsers import S3PParserBase
 from s3p_sdk.types import S3PRefer, S3PDocument
 from selenium.common import NoSuchElementException
@@ -31,25 +33,32 @@ class EPIParser(S3PParserBase):
         self.logger.debug(F"Parser enter to {self._refer.to_logging}")
         for url in self.URLs:
             self._driver.get(url)
-            print(url)
+            self._cookie_accepter()
 
-            list_of_news = self._driver.find_elements(By.CLASS_NAME, 'news_listing_section_bottom_list_item_inner_link')
-            if not list_of_news:
-                list_of_news = self._driver.find_elements(By.CLASS_NAME, 'news_listing_section_bottom_list_item_inner')
-            list_of_links = [news.get_attribute('href') for news in list_of_news]
-            print(len(list_of_links))
+            list_of_news = self._driver.find_elements(By.CLASS_NAME, 'news__list-item')
+            list_of_links = [news.find_element(By.CLASS_NAME, 'news__list-item-buttons-holder').find_element(By.TAG_NAME, 'a').get_attribute('href') for news in list_of_news]
+
+            print(list_of_links)
             for link in list_of_links:
                 self._driver.get(url=link)
-                news_name = self._driver.find_element(By.TAG_NAME, 'h1').text
-
+                self._driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+                time.sleep(2)
                 date_news = datetime.datetime.strptime(
-                    self._driver.find_element(By.CLASS_NAME, 'single_details_wrapper_right_top_date').text, '%B %d, %Y')
+                    self._driver.find_element(By.CLASS_NAME, 'news-detail__hero-date.subtitle').text, '%B %d, %Y')
+                news_name = self._driver.find_element(By.CLASS_NAME, 'news-detail__hero-title.news-article-title').text
 
-                news_text_web_element = self._driver.find_element(By.CLASS_NAME,
-                                                                  'single_details_wrapper_right_bottom_content')
-                news_text = news_text_web_element.text
+                news_text_web_element = self._driver.find_element(By.CLASS_NAME, 'pagebuilder').find_elements(By.CLASS_NAME,'title-text')
 
-                annotation_text = self._checking_for_annotation(news_text_web_element)
+                news_text = ''
+                if news_text_web_element:
+                    for web_element in news_text_web_element:
+                        tags_p = web_element.find_elements(By.TAG_NAME, 'p')
+                        news_text += " ".join([tag.text for tag in tags_p])
+                else:
+                    news_text = self._driver.find_element(By.CLASS_NAME, 'pagebuilder').find_element(
+                        By.CLASS_NAME, 'simple-text__text.body-text.redactor').text
+
+                annotation_text = self._checking_for_annotation()
 
                 document = S3PDocument(
                     title=news_name,
@@ -64,9 +73,18 @@ class EPIParser(S3PParserBase):
                 )
                 self._find(document=document)
 
-    def _checking_for_annotation(self, web_element: WebElement):
+    def _cookie_accepter(self):
         try:
-            result = web_element.find_element(By.TAG_NAME, 'p').find_element(By.TAG_NAME, 'strong')
+            some = self._driver.find_element(By.CLASS_NAME, 'CybotCookiebotDialogContentWrapper')\
+                    .find_element(By.ID, 'CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll')
+            some.click()
+        except Exception:
+            self.logger.warn(f'There is no need to accept cookie')
+
+
+    def _checking_for_annotation(self):
+        try:
+            result = self._driver.find_element(By.CLASS_NAME, 'news-detail__intro-text.body-text')
             if result.text == '':
                 return None
             else:

@@ -2,11 +2,11 @@
 
 ## Написанные методы
 
-# _checking_for_annotation
+### _checking_for_annotation
 ```python
-def _checking_for_annotation(self, web_element: WebElement):
+def _checking_for_annotation(self):
     try:
-        result = web_element.find_element(By.TAG_NAME, 'p').find_element(By.TAG_NAME, 'strong')
+        result = self._driver.find_element(By.CLASS_NAME, 'news-detail__intro-text.body-text')
         if result.text == '':
             return None
         else:
@@ -16,3 +16,15 @@ def _checking_for_annotation(self, web_element: WebElement):
         return None
 ```
 Данный метод был написан для того чтобы отдельно выделять аннотацию новости, которую впоследствии программа будет помещать в abstract.
+
+### _cookie_accepter
+```python
+def _cookie_accepter(self):
+    try:
+        some = self._driver.find_element(By.CLASS_NAME, 'CybotCookiebotDialogContentWrapper')\
+                .find_element(By.ID, 'CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll')
+        some.click()
+    except Exception:
+        self.logger.warn(f'There is no need to accept cookie')
+```
+Данный метод был написан для того, чтобы при каждом открытии страницы проверять необходимость принятия куков и в случае необходимости - принимать.
